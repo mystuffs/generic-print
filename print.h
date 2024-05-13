@@ -171,6 +171,11 @@ void __print_func (FILE *fd, int count, unsigned short types[], ...) {
 	__builtin_choose_expr(sizeof(a) == 2, 4, \
 	(0)  )))))))))))))))))))
 
+/* Disable Clang's warning of "cont" unused variable. */
+#if defined (__clang__)
+#pragma clang diagnostic ignored "-Wunused-value"
+#endif
+
 #define __print_push(c,size,cont) (cont, *--_p = c | (size << 5))
 #define __builtin_choose_expr __builtin_choose_expr
 #define __print_is_type(a, t) __builtin_types_compatible_p(typeof(a), t)
