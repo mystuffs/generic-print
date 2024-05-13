@@ -5,7 +5,7 @@ int __print_enable_color = 1;
 
 void __print_color(FILE* fd, int a) {
 	if (!__print_enable_color) return;
-	if (a == -1) fprintf(fd, "\x1b(B\x1b[m");
+	if (a == -1) fputs("\x1b(B\x1b[m", fd);
 	else fprintf(fd, "\x1b[38;5;%im", a);
 }
 
@@ -14,15 +14,15 @@ void __print_color(FILE* fd, int a) {
 	int max_len = 16; \
 	int n = size/sizeof(T); \
 	T *m = va_arg(v, T*); \
-	fprintf(fd, "["); \
+	fputc('[', fd);	  \
 	__print_color(fd, color); \
 	for (int i = 0; i < (n < max_len ? n : max_len); i++) { \
-		if (i > 0) fprintf(fd, " "); \
+		if (i > 0) fputc(' ', fd);			\
 		fprintf(fd, qual, m[i]); \
 	} \
 	__print_color(fd, __print_color_normal); \
-	if (n > max_len) fprintf(fd, "..."); \
-	fprintf(fd, "]");
+	if (n > max_len) fputs("...", fd);	 \
+	fputc(']', fd);
 
 int __print_color_normal = -1; // -1 means default terminal foreground color
 int __print_color_number = 4;
@@ -46,88 +46,107 @@ void __print_func (FILE *fd, int count, unsigned short types[], ...) {
 	for (int i = 0; i < count; i++) {
 		char type = types[i] & 0x1F;
 		char size = types[i] >> 5;
-		if (i > 0) fprintf(fd, " ");
+		if (i > 0) fputc(' ', fd);
 		fprintf(fd, "%i[%i]", type, size);
 	}
-	fprintf(fd, "\n");
+	fputc('\n', fd);
 	#endif // __print_DEBUG
 
+	double d;
+	char c;
 	for (int i = 0; i < count; i++) {
-		if (i > 0) fprintf(fd, " ");
+		if (i > 0) fputc(' ', fd);
 		char type = types[i] & 0x1F;
 		char size = types[i] >> 5;
-		if (type == 1) {
+		switch (type) {
+		case 1: {
 			__print_color(fd, __print_color_float);
-			double d = va_arg(v, double);
+		        d = va_arg(v, double);
 			fprintf(fd, "%'G", d);
+			break;
 		}
-		else if (type == 2) {
+		case 2: {
 			__print_color(fd, __print_color_string);
-			char c = va_arg(v, int);
+		        c = va_arg(v, int);
 			fprintf(fd, "'%c'", c); __print_color(fd, __print_color_number);
 			fprintf(fd, "%i", (int)c);
+			break;
 		}
-		else if (type == 3) {
+		case 3: {
 			__print_color(fd, __print_color_number);
-			char c = va_arg(v, int);
+		        c = va_arg(v, int);
 			fprintf(fd, "%i", (unsigned char)c);
 			__print_color(fd, __print_color_normal);
-			fprintf(fd, "<");
+		        fputc('<', fd);
 			__print_color(fd, __print_color_hex);
 			fprintf(fd, "0x%X", (unsigned char)c);
 			__print_color(fd, __print_color_normal);
-			fprintf(fd, ">");
+			fputc('>', fd);
+			break;
 		}
-		else if (type == 4) {
+		case 4: {
 			__print_color(fd, __print_color_number);
 			fprintf(fd, "%'i", va_arg(v, int));
+			break;
 		}
-		else if (type == 5) {
+		case 5: {
 			__print_color(fd, __print_color_number);
 			fprintf(fd, "%'u", va_arg(v, int));
+			break;
 		}
-		else if (type == 6) {
+		case 6: {
 			__print_color(fd, __print_color_number);
 			fprintf(fd, "%'li", va_arg(v, unsigned long));
+			break;
 		}
-		else if (type == 7) {
+		case 7: {
 			__print_color(fd, __print_color_number);
 			fprintf(fd, "%'lu", va_arg(v, long));
+			break;
 		}
-		else if (type == 8) {
+		case 8: {
 			__print_color(fd, __print_color_string);
 			fprintf(fd, "\"%s\"", va_arg(v, char*));
+			break;
 		}
-		else if (type == 9) {
+		case 9: {
 			__print_color(fd, __print_color_normal);
 			fprintf(fd, "%s", va_arg(v, char*));
+			break;
 		}
-		else if (type == 10) {
+		case 10: {
 			__print_color(fd, __print_color_hex);
 			fprintf(fd, "%p", va_arg(v, void*));
+			break;
 		}
-		else if (type == 11) {
+		case 11: {
 			__print_array(fd, int, "%i", __print_color_number);
+		        break;
 		}
-		else if (type == 12) {
+		case 12: {
 			__print_array(fd, unsigned int, "%u", __print_color_number);
+			break;
 		}
-		else if (type == 13) {
+		case 13: {
 			__print_array(fd, short, "%i", __print_color_number);
+			break;
 		}
-		else if (type == 14) {
+		case 14: {
 			__print_array(fd, unsigned short, "%i", __print_color_number);
+			break;
 		}
-		else if (type == 15) {
+		case 15: {
 			__print_array(fd, char*, "\"%s\"", __print_color_string);
+			break;
 		}
-		else {
-			fprintf(fd, "print: unsupported type (of size %i)\n", size); break;
+		default:
+			fprintf(fd, "print: unsupported type (of size %i)\n", size);
+			break;
 		}
 	}
 	va_end(v);
 	__print_color(fd, -1);
-	fprintf(fd, "\n");
+	fputc('\n', fd);
 }
 
 #define __print_typeid(a) \
