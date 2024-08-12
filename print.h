@@ -1,9 +1,12 @@
+#ifndef PRINT_H
+#define PRINT_H
+
 #include <stdarg.h>
 #include <stdio.h>
 
-int __print_enable_color = 1;
+static int __print_enable_color = 1;
 
-void __print_color(FILE* fd, int a) {
+static void __print_color(FILE* fd, int a) {
 	if (!__print_enable_color) return;
 	if (a == -1) fputs("\x1b(B\x1b[m", fd);
 	else fprintf(fd, "\x1b[38;5;%im", a);
@@ -24,13 +27,13 @@ void __print_color(FILE* fd, int a) {
 	if (n > max_len) fputs("...", fd);	 \
 	fputc(']', fd);
 
-int __print_color_normal = -1; // -1 means default terminal foreground color
-int __print_color_number = 4;
-int __print_color_string = 1;
-int __print_color_hex = 2;
-int __print_color_float = 5;
+static int __print_color_normal = -1; // -1 means default terminal foreground color
+static int __print_color_number = 4;
+static int __print_color_string = 1;
+static int __print_color_hex = 2;
+static int __print_color_float = 5;
 
-void __print_setup_colors(int normal, int number, int string, int hex, int fractional) {
+static void __print_setup_colors(int normal, int number, int string, int hex, int fractional) {
 	__print_color_string = string;
 	__print_color_number = number;
 	__print_color_hex = hex;
@@ -38,7 +41,7 @@ void __print_setup_colors(int normal, int number, int string, int hex, int fract
 	__print_color_float = fractional;
 }
 
-void __print_func (FILE *fd, int count, unsigned short types[], ...) {
+static void __print_func (FILE *fd, int count, unsigned short types[], ...) {
 	va_list v;
 	va_start(v, types);
 	#ifdef __print_DEBUG
@@ -197,3 +200,4 @@ void __print_func (FILE *fd, int count, unsigned short types[], ...) {
 
 #define print(a...) fprint(stdout, a)
 
+#endif
