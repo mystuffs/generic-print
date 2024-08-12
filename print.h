@@ -1,6 +1,7 @@
 #ifndef PRINT_H
 #define PRINT_H
 
+#include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -142,6 +143,11 @@ static void __print_func (FILE *fd, int count, unsigned short types[], ...) {
 			__print_array(fd, char*, "\"%s\"", __print_color_string);
 			break;
 		}
+		case 16: {
+		        c = va_arg(v, int);
+			fprintf(fd, c ? "\x1b[38;5;2mtrue": "\x1b[38;5;1mfalse");
+			break;
+		}
 		default:
 			fprintf(fd, "print: unsupported type (of size %i)\n", size);
 			break;
@@ -170,9 +176,10 @@ static void __print_func (FILE *fd, int count, unsigned short types[], ...) {
 	__builtin_choose_expr(__print_is_type(a, short[]), 13, \
 	__builtin_choose_expr(__print_is_type(a, unsigned short[]), 14, \
 	__builtin_choose_expr(__print_is_type(a, char*[]), 15, \
+	__builtin_choose_expr(__print_is_type(a, bool), 16, \
 	__builtin_choose_expr(sizeof(a) == 1, 2, \
 	__builtin_choose_expr(sizeof(a) == 2, 4, \
-	(0)  )))))))))))))))))))
+	(0)  ))))))))))))))))))))
 
 /* Disable Clang's warning of "cont" unused variable. */
 #if defined (__clang__)
